@@ -1,0 +1,32 @@
+name: 24/7 Market Scanner
+
+on:
+  schedule:
+    - cron: '0 14-21 * * 1-5' # Runs every hour during market time (EST)
+  workflow_dispatch: # This adds the "Manual Run" button
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install pandas yfinance
+
+      - name: Run Market Scan
+        run: python get_stocks.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "MarketBot"
+          git config --global user.email "bot@github.com"
+          git add *.csv
+          git commit -m "Automated Update: $(date)" || exit 0
+          git push
