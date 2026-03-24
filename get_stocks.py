@@ -47,4 +47,3 @@ final_df.to_csv(file_path)
 
 print(f"\nSUCCESS! Daily % Change and Volume Intensity calculated.")
 print(f"File saved as: MarketData_Pro.csv")
-input("Press Enter to close...")
