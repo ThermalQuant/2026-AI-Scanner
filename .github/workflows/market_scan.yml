@@ -24,7 +24,7 @@ jobs:
           pip install pandas_ta --no-dependencies
 
       - name: Run Market Scanner
-        run: python market_scanner.py
+        run: python get_stocks.py
 
       - name: Write to Google Sheets
         uses: jroehl/gsheet.action@v1.0.0
