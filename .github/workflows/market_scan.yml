@@ -1,15 +1,15 @@
-name: market_scan
+name: Market Scan and Update Sheet
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 21 * * 1-5'
+    - cron: '0 14 * * 1-5' # Runs at 10 AM EST every weekday
 
 jobs:
-  build:
+  market_scan:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -17,12 +17,13 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
-          pip install pandas yfinance
+          python -m pip install --upgrade pip
+          pip install pandas yfinance pandas_ta
 
-      - name: Run Stock Script
-        run: python get_stocks.py
+      - name: Run Market Scanner
+        run: python market_scanner.py # Make sure your script name matches this!
 
       - name: Write to Google Sheets
         uses: jroehl/gsheet.action@v1.0.0
@@ -39,3 +40,5 @@ jobs:
                 }
               }
             ]
+        env:
+          GSHEET_CREDENTIALS: ${{ secrets.GSHEET_CREDENTIALS }}
