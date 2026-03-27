@@ -30,3 +30,19 @@ jobs:
           git add *.csv
           git commit -m "Automated Update: $(date)" || exit 0
           git push
+      - name: Write to Google Sheets
+        uses: jroehl/gsheet.action@v2
+        with:
+          spreadsheetId: ${{ secrets.SPREADSHEET_ID }}
+          commands: |
+            [
+              {
+                "command": "update",
+                "args": {
+                  "worksheet": "Raw Data",
+                  "data": "MarketData_Pro.csv",
+                  "minCol": 1
+                }
+              }
+            ]
+          
