@@ -15,15 +15,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.11'
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pandas yfinance pandas_ta
+          pip install pandas yfinance numpy
+          pip install pandas_ta --no-dependencies
 
       - name: Run Market Scanner
-        run: python market_scanner.py # Make sure your script name matches this!
+        run: python market_scanner.py
 
       - name: Write to Google Sheets
         uses: jroehl/gsheet.action@v1.0.0
