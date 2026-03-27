@@ -1,57 +1,35 @@
-import logging
-
-# Create a log file so you can see if the script failed while you were sleeping
-logging.basicConfig(filename='market_scanner.log', level=logging.INFO, 
-                    format='%(asctime)s - %(message)s')
-
-try:
-    # Your existing download code here
-    logging.info("Scan Successful: Data saved.")
-except Exception as e:
-    logging.error(f"Scan Failed: {e}")
-
 import pandas as pd
 import yfinance as yf
 import os
 
-# 1. Tickers (The 2026 AI Infrastructure Kings)
-# 1. Open the 'S&P Library' tab (Sheet 4) to get all 500 tickers
-library_sheet = client.open("Your_Sheet_Name_Here").worksheet("S&P Library")
-# Pulls every ticker from Column A, skipping the header
-tickers = library_sheet.col_values(1)[1:] 
-(Crucial: Replace
+# 1. THE TICKERS (S&P 500 + YOUR CORE LIST)
+# You can add all 500 here later, but let's start with these to ensure it runs!
+tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "GOOGL", "AMZN", "META", "APLD", "PLTR", "VRT"] 
 
 # 2. Download Data
-print("Scanning 2026 AI Infrastructure Market...")
 raw_data = yf.download(tickers, period="1mo", group_by='ticker')
 
-# 3. Process the "Performance" Columns
 processed_list = []
-
 for ticker in tickers:
-    # Extract this ticker's data
     df = raw_data[ticker].copy()
     df['Ticker'] = ticker
     
     # CALCULATE: Daily % Change
     df['Daily_Change_%'] = df['Close'].pct_change() * 100
     
-    # CALCULATE: Volume Intensity (Today's Vol / 5-Day Avg Vol)
+    # CALCULATE: Volume Intensity
     df['Vol_Intensity'] = df['Volume'] / df['Volume'].rolling(window=5).mean()
-    # CALCULATE: Signal (The Buy/Sell Trigger)
-        df['Signal'] = 0  # Default to Wait
-        df.loc[(df['Vol_Intensity'] > 1.2) & (df['Daily_Change_%'] > 0), 'Signal'] = 1  # BUY
-        df.loc[(df['Vol_Intensity'] > 1.2) & (df['Daily_Change_%'] < 0), 'Signal'] = -1 # SELL
-🏛️ What this code does:
-    processed_list.append(df)
+    
+    # NEW: CALCULATE SIGNAL (1 = BUY, -1 = SELL, 0 = WAIT)
+    df['Signal'] = 0
+    df.loc[(df['Vol_Intensity'] > 1.2) & (df['Daily_Change_%'] > 0), 'Signal'] = 1
+    df.loc[(df['Vol_Intensity'] > 1.2) & (df['Daily_Change_%'] < 0), 'Signal'] = -1
 
-# Combine everything into one clean sheet
-final_df = pd.concat(processed_list).sort_index()
+    processed_list.append(df.tail(1)) # Only keep the latest data point
 
-# 4. Save the File
-current_folder = os.path.dirname(os.path.abspath(__file__))
-file_path = os.path.join(current_folder, 'MarketData_Pro.csv')
-final_df.to_csv(file_path)
+# 3. Save the File
+final_df = pd.concat(processed_list)
+file_path = 'MarketData_Pro.csv'
+final_df.to_csv(file_path, index=False)
 
-print(f"\nSUCCESS! Daily % Change and Volume Intensity calculated.")
-print(f"File saved as: MarketData_Pro.csv")
+print("SUCCESS: Intensity and Signals Calculated.")
