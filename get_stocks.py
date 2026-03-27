@@ -24,6 +24,11 @@ for ticker in tickers:
     except:
         continue
 
-# 3. SAVE TO CSV
-final_df = pd.concat(processed_list)
-final_df.to_csv('MarketData_Pro.csv', index=False)
+# 3. SAVE TO CSV (Fixed for the Robot)
+if not processed_list:
+    print("No data found!")
+else:
+    final_df = pd.concat(processed_list)
+    # This line tells the computer exactly where to put the paper
+    final_df.to_csv('MarketData_Pro.csv', index=True) 
+    print("Paper saved successfully!")
