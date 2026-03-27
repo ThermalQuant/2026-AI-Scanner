@@ -15,7 +15,11 @@ import yfinance as yf
 import os
 
 # 1. Tickers (The 2026 AI Infrastructure Kings)
-tickers = ["NVDA", "VRT", "CEG", "GEV", "CCJ", "PLTR", "APLD", "NEE"]
+# 1. Open the 'S&P Library' tab (Sheet 4) to get all 500 tickers
+library_sheet = client.open("Your_Sheet_Name_Here").worksheet("S&P Library")
+# Pulls every ticker from Column A, skipping the header
+tickers = library_sheet.col_values(1)[1:] 
+(Crucial: Replace
 
 # 2. Download Data
 print("Scanning 2026 AI Infrastructure Market...")
@@ -34,7 +38,11 @@ for ticker in tickers:
     
     # CALCULATE: Volume Intensity (Today's Vol / 5-Day Avg Vol)
     df['Vol_Intensity'] = df['Volume'] / df['Volume'].rolling(window=5).mean()
-    
+    # CALCULATE: Signal (The Buy/Sell Trigger)
+        df['Signal'] = 0  # Default to Wait
+        df.loc[(df['Vol_Intensity'] > 1.2) & (df['Daily_Change_%'] > 0), 'Signal'] = 1  # BUY
+        df.loc[(df['Vol_Intensity'] > 1.2) & (df['Daily_Change_%'] < 0), 'Signal'] = -1 # SELL
+🏛️ What this code does:
     processed_list.append(df)
 
 # Combine everything into one clean sheet
