@@ -3,7 +3,7 @@ name: Market Scan and Update Sheet
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/5 * * * *'   # Runs every 5 minutes
 
 jobs:
   market_scan:
