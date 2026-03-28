@@ -3,7 +3,7 @@ name: Market Scan and Update Sheet
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *'   # Runs every 5 minutes
+    - cron: '*/5 * * * *'
 
 jobs:
   market_scan:
@@ -20,27 +20,13 @@ jobs:
 
       - name: 3. Install Tools
         run: |
-          pip install pandas yfinance numpy
-          pip install pandas_ta --no-dependencies
+          pip install pandas yfinance numpy pandas_ta gspread
 
       - name: 4. Run the Scanner
         run: python get_stocks.py
 
-      - name: 5. Send to Google Sheets
-        uses: jroehl/gsheet.action@v1.0.0
-        with:
-          spreadsheetId: ${{ secrets.SPREADSHEET_ID }}
-          commands: |
-            [
-              {
-                "command": "update",
-                "args": {
-                  "worksheet": "Raw Data",
-                  "data": "MarketData_Pro.csv",
-                  "minCol": 1
-                }
-              }
-            ]
+      - name: 5. Update Google Sheets
         env:
-          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
-          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
+          GSHEET_CREDENTIALS: ${{ secrets.GSHEET_CREDENTIALS }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+        run: python update_sheet.py
