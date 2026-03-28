@@ -24,4 +24,3 @@ worksheet.update([df.columns.tolist()] + df.values.tolist())
 
 print(f"✅ Successfully updated 'Raw Data' with {len(df)} rows and {len(df.columns)} columns.")
 print(f"Columns: {list(df.columns)}")
-Add update_sheet.py for Google Sheets upload
