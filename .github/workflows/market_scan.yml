@@ -3,11 +3,12 @@ name: Market Scan and Update Sheet
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *' # This tells the computer: "Check for updates every 5 minutes"
+    - cron: '*/5 * * * *'   # Runs every 5 minutes
 
 jobs:
   market_scan:
     runs-on: ubuntu-latest
+
     steps:
       - name: 1. Get the Files
         uses: actions/checkout@v4
@@ -24,7 +25,7 @@ jobs:
 
       - name: 4. Run the Scanner
         run: python get_stocks.py
-        
+
       - name: 5. Send to Google Sheets
         uses: jroehl/gsheet.action@v1.0.0
         with:
@@ -35,7 +36,7 @@ jobs:
                 "command": "update",
                 "args": {
                   "worksheet": "Raw Data",
-                  "data": "MarketData_Pro.csv",   # Make sure this matches the exact filename your Python script actually saves
+                  "data": "MarketData_Pro.csv",
                   "minCol": 1
                 }
               }
