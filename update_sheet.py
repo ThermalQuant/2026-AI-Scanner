@@ -4,6 +4,8 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 
+print("=== Starting Google Sheets Update ===")
+
 # Load credentials
 creds_dict = json.loads(os.environ['GSHEET_CREDENTIALS'])
 scopes = ['https://www.googleapis.com/auth/spreadsheets']
@@ -14,20 +16,24 @@ gc = gspread.authorize(creds)
 spreadsheet = gc.open_by_key(os.environ['SPREADSHEET_ID'])
 worksheet = spreadsheet.worksheet("Raw Data")
 
-# Read CSV
-df = pd.read_csv('MarketData_Pro.csv')
+print(f"Opened spreadsheet. Worksheet: 'Raw Data'")
 
-# Fix NaN / inf values so gspread can handle them
-df = df.fillna('')                    # Replace NaN with empty string
-df = df.replace([float('inf'), float('-inf')], '')   # Replace inf with empty
-
-if df.empty:
-    print("❌ No data found in MarketData_Pro.csv")
-else:
+# Check if CSV exists and show info
+if os.path.exists('MarketData_Pro.csv'):
+    df = pd.read_csv('MarketData_Pro.csv')
+    print(f"✅ CSV found with {len(df)} rows and columns: {list(df.columns)}")
+    print(f"First 3 tickers: {df['Ticker'].head(3).tolist() if 'Ticker' in df.columns else 'No Ticker column'}")
+    
+    # Handle NaN values
+    df = df.fillna('')
+    df = df.replace([float('inf'), float('-inf')], '')
+    
     # Clear and update
     worksheet.clear()
     worksheet.update([df.columns.tolist()] + df.values.tolist())
     
-    print(f"✅ Successfully updated 'Raw Data' with {len(df)} rows and {len(df.columns)} columns.")
-    print(f"Columns: {list(df.columns)}")
-    print(f"Sample tickers: {df['Ticker'].head(10).tolist()}")
+    print(f"✅ Successfully wrote {len(df)} rows to 'Raw Data' sheet")
+else:
+    print("❌ MarketData_Pro.csv not found!")
+
+print("=== Update finished ===")
