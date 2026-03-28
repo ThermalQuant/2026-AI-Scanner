@@ -24,7 +24,7 @@ jobs:
 
       - name: 4. Run the Scanner
         run: python get_stocks.py
-
+        
       - name: 5. Send to Google Sheets
         uses: jroehl/gsheet.action@v1.0.0
         with:
@@ -35,10 +35,11 @@ jobs:
                 "command": "update",
                 "args": {
                   "worksheet": "Raw Data",
-                  "data": "MarketData_Pro.csv",
+                  "data": "MarketData_Pro.csv",   # Make sure this matches the exact filename your Python script actually saves
                   "minCol": 1
                 }
               }
             ]
         env:
-          GSHEET_CREDENTIALS: ${{ secrets.GSHEET_CREDENTIALS }}
+          GSHEET_CLIENT_EMAIL: ${{ secrets.GSHEET_CLIENT_EMAIL }}
+          GSHEET_PRIVATE_KEY: ${{ secrets.GSHEET_PRIVATE_KEY }}
