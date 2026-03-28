@@ -22,5 +22,5 @@ df = pd.read_csv('MarketData_Pro.csv')
 worksheet.clear()
 worksheet.update([df.columns.tolist()] + df.values.tolist())
 
-print(f"✅ Successfully updated 'Raw Data' with {len(df)} rows and {len(df.columns)} columns.")
+print(f"Success: Successfully updated 'Raw Data' with {len(df)} rows and {len(df.columns)} columns.")
 print(f"Columns: {list(df.columns)}")
