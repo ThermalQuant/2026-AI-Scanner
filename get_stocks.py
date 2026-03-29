@@ -1,9 +1,9 @@
 import pandas as pd
 import yfinance as yf
 
-print("=== Starting Market Scanner v4 - Force Date First ===")
+print("=== Market Scanner v5 - Simple & Clean ===")
 
-tickers = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AVGO", "GOOG", "LLY", "JPM", "V", "XOM", "UNH", "MA", "PG", "JNJ", "HD", "MRK", "COST", "ABBV", "NFLX", "AMD", "CRM", "TMUS", "LIN", "WMT", "BAC", "CVX", "KO", "PEP", "ACN", "MCD", "CSCO", "ADBE", "ABT", "WFC", "INTU", "DIS", "VZ", "CMCSA", "PFE", "AMGN", "TXN", "HON", "NEE", "IBM", "RTX", "SPGI", "LOW", "PM", "GS", "CAT", "UNP", "GE", "BA", "ELV", "ETN", "SYK", "BLK", "MDT", "ADP", "LMT", "SBUX", "NOW", "ISRG", "PLD", "INTC", "SCHW", "REGN", "BKNG", "KLAC", "PANW", "FI", "ANET", "KKR", "ADI", "MU", "GILD", "SO", "MO", "ICE", "ZTS", "CME", "ITW", "SHW", "DUK", "CL", "WM", "TGT", "EOG", "SNPS", "BSX", "APD", "PGR", "CDNS", "MAR", "ORCL", "SLB", "PSX", "OKE", "PH", "ROP", "MPC", "USB", "AON"]
+tickers = ["AAPL","MSFT","NVDA","GOOGL","AMZN","META","TSLA","AVGO","GOOG","LLY","JPM","V","XOM","UNH","MA","PG","JNJ","HD","MRK","COST","ABBV","NFLX","AMD","CRM","TMUS","LIN","WMT","BAC","CVX","KO","PEP","ACN","MCD","CSCO","ADBE","ABT","WFC","INTU","DIS","VZ","CMCSA","PFE","AMGN","TXN","HON","NEE","IBM","RTX","SPGI","LOW","PM","GS","CAT","UNP","GE","BA","ELV","ETN","SYK","BLK","MDT","ADP","LMT","SBUX","NOW","ISRG","PLD","INTC","SCHW","REGN","BKNG","KLAC","PANW","FI","ANET","KKR","ADI","MU","GILD","SO","MO","ICE","ZTS","CME","ITW","SHW","DUK","CL","WM","TGT","EOG","SNPS","BSX","APD","PGR","CDNS","MAR","ORCL","SLB","PSX","OKE","PH","ROP","MPC","USB","AON"]
 
 data_list = []
 
@@ -40,19 +40,15 @@ for ticker in tickers:
     except:
         continue
 
-if data_list:
-    final_df = pd.DataFrame(data_list)
-    
-    # Force 'Date' to be the first column
-    cols = ['Date'] + [col for col in final_df.columns if col != 'Date']
-    final_df = final_df[cols]
-    
-    final_df = final_df.sort_values(by='Daily_Change_%', ascending=False).reset_index(drop=True)
-    
-    final_df.to_csv('MarketData_Pro.csv', index=False)
-    
-    print(f"✅ Saved {len(final_df)} rows")
-    print("Columns in order:", list(final_df.columns))
-    print(final_df.head(5)[['Date', 'Ticker', 'Close', 'Daily_Change_%', 'Signal']])
-else:
-    print("No data retrieved.")
+final_df = pd.DataFrame(data_list)
+
+# Force correct column order with Date first
+final_df = final_df[['Date', 'Ticker', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume', 'Daily_Change_%', 'Volume_Intensity', 'Signal']]
+
+final_df = final_df.sort_values(by='Daily_Change_%', ascending=False).reset_index(drop=True)
+
+final_df.to_csv('MarketData_Pro.csv', index=False)
+
+print(f"✅ Saved {len(final_df)} rows")
+print("Final columns:", list(final_df.columns))
+print(final_df[['Date', 'Ticker', 'Close', 'Daily_Change_%', 'Signal']].head(8))
