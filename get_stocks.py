@@ -1,10 +1,9 @@
 import pandas as pd
 import yfinance as yf
-from datetime import datetime
 
-print("Starting improved market scanner...")
+print("Starting clean market scanner...")
 
-# Solid list of active S&P 500 / major tickers
+# Reliable ticker list
 tickers = [
     "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AVGO", "GOOG", "LLY",
     "JPM", "V", "XOM", "UNH", "MA", "PG", "JNJ", "HD", "MRK", "COST", "ABBV",
@@ -16,16 +15,14 @@ tickers = [
     "ANET", "KKR", "ADI", "MU", "GILD", "SO", "MO", "ICE", "ZTS", "CME", "ITW",
     "SHW", "DUK", "CL", "WM", "TGT", "EOG", "SNPS", "BSX", "APD", "PGR", "CDNS",
     "MAR", "ORCL", "SLB", "PSX", "OKE", "PH", "ROP", "MPC", "USB", "AON", "TT",
-    "CSX", "DE", "FDX", "EMR", "ITW", "HUM", "PNC", "TDG", "MMM", "GD", "NSC"
+    "CSX", "DE", "FDX", "EMR", "HUM", "PNC", "TDG", "MMM", "GD", "NSC"
 ]
-
-print(f"Scanning {len(tickers)} tickers...")
 
 data_list = []
 
 for ticker in tickers:
     try:
-        df = yf.download(ticker, period="6d", interval="1d", progress=False, threads=False)
+        df = yf.download(ticker, period="5d", interval="1d", progress=False, threads=False)
         
         if df.empty or len(df) < 2:
             continue
@@ -45,34 +42,30 @@ for ticker in tickers:
             'Adj_Close': round(float(latest['Adj Close']), 4),
             'Volume': int(latest['Volume']),
             'Daily_Change_%': round(float(daily_change), 2),
-            'Volume_Intensity': round(float(latest['Volume'] / df['Volume'].rolling(window=5).mean().iloc[-1]), 2) if len(df) >= 5 else 1.0,
+            'Volume_Intensity': round(float(latest['Volume'] / df['Volume'].rolling(5).mean().iloc[-1]), 2) if len(df) >= 5 else 1.0,
             'Signal': 0
         }
 
-        # Improved Signal Logic
+        # Better Signal
         if row['Volume_Intensity'] > 1.5 and row['Daily_Change_%'] > 1.0:
-            row['Signal'] = 1      # Strong bullish
-        elif row['Volume_Intensity'] > 1.5 and row['Daily_Change_%'] < -1.0:
-            row['Signal'] = -1     # Strong bearish
-        elif row['Daily_Change_%'] > 2.0:
             row['Signal'] = 1
-        elif row['Daily_Change_%'] < -2.0:
+        elif row['Volume_Intensity'] > 1.5 and row['Daily_Change_%'] < -1.0:
             row['Signal'] = -1
+        elif abs(row['Daily_Change_%']) > 2.0:
+            row['Signal'] = 1 if row['Daily_Change_%'] > 0 else -1
 
         data_list.append(row)
 
     except:
         continue
 
-# Final DataFrame
 if data_list:
     final_df = pd.DataFrame(data_list)
     final_df = final_df.sort_values(by='Daily_Change_%', ascending=False).reset_index(drop=True)
     
     final_df.to_csv('MarketData_Pro.csv', index=False)
     
-    print(f"✅ Success! Saved {len(final_df)} tickers to MarketData_Pro.csv")
-    print(f"Top 5 by Daily Change:\n{final_df[['Ticker', 'Daily_Change_%', 'Volume_Intensity', 'Signal']].head(5)}")
-    print(f"Signals distribution: {final_df['Signal'].value_counts().to_dict()}")
+    print(f"✅ Success! Saved {len(final_df)} rows")
+    print(final_df[['Ticker', 'Daily_Change_%', 'Volume_Intensity', 'Signal']].head(10))
 else:
-    print("❌ No data retrieved.")
+    print("No data retrieved.")
