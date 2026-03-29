@@ -1,29 +1,15 @@
 import pandas as pd
 import yfinance as yf
 
-print("Starting clean market scanner...")
+print("Starting clean market scanner v2...")
 
-# Reliable ticker list
-tickers = [
-    "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AVGO", "GOOG", "LLY",
-    "JPM", "V", "XOM", "UNH", "MA", "PG", "JNJ", "HD", "MRK", "COST", "ABBV",
-    "NFLX", "AMD", "CRM", "TMUS", "LIN", "WMT", "BAC", "CVX", "KO", "PEP", "ACN",
-    "MCD", "CSCO", "ADBE", "ABT", "WFC", "INTU", "DIS", "VZ", "CMCSA", "PFE",
-    "AMGN", "TXN", "HON", "NEE", "IBM", "RTX", "SPGI", "LOW", "PM", "GS", "CAT",
-    "UNP", "GE", "BA", "ELV", "ETN", "SYK", "BLK", "MDT", "ADP", "LMT", "SBUX",
-    "NOW", "ISRG", "PLD", "INTC", "SCHW", "REGN", "BKNG", "KLAC", "PANW", "FI",
-    "ANET", "KKR", "ADI", "MU", "GILD", "SO", "MO", "ICE", "ZTS", "CME", "ITW",
-    "SHW", "DUK", "CL", "WM", "TGT", "EOG", "SNPS", "BSX", "APD", "PGR", "CDNS",
-    "MAR", "ORCL", "SLB", "PSX", "OKE", "PH", "ROP", "MPC", "USB", "AON", "TT",
-    "CSX", "DE", "FDX", "EMR", "HUM", "PNC", "TDG", "MMM", "GD", "NSC"
-]
+tickers = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AVGO", "GOOG", "LLY", "JPM", "V", "XOM", "UNH", "MA", "PG", "JNJ", "HD", "MRK", "COST", "ABBV", "NFLX", "AMD", "CRM", "TMUS", "LIN", "WMT", "BAC", "CVX", "KO", "PEP", "ACN", "MCD", "CSCO", "ADBE", "ABT", "WFC", "INTU", "DIS", "VZ", "CMCSA", "PFE", "AMGN", "TXN", "HON", "NEE", "IBM", "RTX", "SPGI", "LOW", "PM", "GS", "CAT", "UNP", "GE", "BA", "ELV", "ETN", "SYK", "BLK", "MDT", "ADP", "LMT", "SBUX", "NOW", "ISRG", "PLD", "INTC", "SCHW", "REGN", "BKNG", "KLAC", "PANW", "FI", "ANET", "KKR", "ADI", "MU", "GILD", "SO", "MO", "ICE", "ZTS", "CME", "ITW", "SHW", "DUK", "CL", "WM", "TGT", "EOG", "SNPS", "BSX", "APD", "PGR", "CDNS", "MAR", "ORCL", "SLB", "PSX", "OKE", "PH", "ROP", "MPC", "USB", "AON"]
 
 data_list = []
 
 for ticker in tickers:
     try:
         df = yf.download(ticker, period="5d", interval="1d", progress=False, threads=False)
-        
         if df.empty or len(df) < 2:
             continue
 
@@ -46,7 +32,6 @@ for ticker in tickers:
             'Signal': 0
         }
 
-        # Better Signal
         if row['Volume_Intensity'] > 1.5 and row['Daily_Change_%'] > 1.0:
             row['Signal'] = 1
         elif row['Volume_Intensity'] > 1.5 and row['Daily_Change_%'] < -1.0:
@@ -64,8 +49,5 @@ if data_list:
     final_df = final_df.sort_values(by='Daily_Change_%', ascending=False).reset_index(drop=True)
     
     final_df.to_csv('MarketData_Pro.csv', index=False)
-    
-    print(f"✅ Success! Saved {len(final_df)} rows")
-    print(final_df[['Ticker', 'Daily_Change_%', 'Volume_Intensity', 'Signal']].head(10))
-else:
-    print("No data retrieved.")
+    print(f"✅ Saved {len(final_df)} rows successfully")
+    print(final_df[['Ticker', 'Close', 'Daily_Change_%', 'Signal']].head(10))
