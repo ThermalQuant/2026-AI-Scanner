@@ -1,9 +1,9 @@
 import pandas as pd
 import yfinance as yf
 
-print("=== Market Scanner v5 - Simple & Clean ===")
+print("=== Market Scanner v6 - Safe Version ===")
 
-tickers = ["AAPL","MSFT","NVDA","GOOGL","AMZN","META","TSLA","AVGO","GOOG","LLY","JPM","V","XOM","UNH","MA","PG","JNJ","HD","MRK","COST","ABBV","NFLX","AMD","CRM","TMUS","LIN","WMT","BAC","CVX","KO","PEP","ACN","MCD","CSCO","ADBE","ABT","WFC","INTU","DIS","VZ","CMCSA","PFE","AMGN","TXN","HON","NEE","IBM","RTX","SPGI","LOW","PM","GS","CAT","UNP","GE","BA","ELV","ETN","SYK","BLK","MDT","ADP","LMT","SBUX","NOW","ISRG","PLD","INTC","SCHW","REGN","BKNG","KLAC","PANW","FI","ANET","KKR","ADI","MU","GILD","SO","MO","ICE","ZTS","CME","ITW","SHW","DUK","CL","WM","TGT","EOG","SNPS","BSX","APD","PGR","CDNS","MAR","ORCL","SLB","PSX","OKE","PH","ROP","MPC","USB","AON"]
+tickers = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AVGO", "GOOG", "LLY", "JPM", "V", "XOM", "UNH", "MA", "PG", "JNJ", "HD", "MRK", "COST", "ABBV", "NFLX", "AMD", "CRM", "TMUS", "LIN", "WMT", "BAC", "CVX", "KO", "PEP", "ACN", "MCD", "CSCO", "ADBE", "ABT", "WFC", "INTU", "DIS", "VZ", "CMCSA", "PFE", "AMGN", "TXN", "HON", "NEE", "IBM", "RTX", "SPGI", "LOW", "PM", "GS", "CAT", "UNP", "GE", "BA", "ELV", "ETN", "SYK", "BLK", "MDT", "ADP", "LMT", "SBUX", "NOW", "ISRG", "PLD", "INTC", "SCHW", "REGN", "BKNG", "KLAC", "PANW", "FI", "ANET", "KKR", "ADI", "MU", "GILD", "SO", "MO", "ICE", "ZTS", "CME", "ITW", "SHW", "DUK", "CL", "WM", "TGT", "EOG", "SNPS", "BSX", "APD", "PGR", "CDNS", "MAR", "ORCL", "SLB", "PSX", "OKE", "PH", "ROP", "MPC", "USB", "AON"]
 
 data_list = []
 
@@ -21,14 +21,14 @@ for ticker in tickers:
         row = {
             'Date': latest.name.strftime('%Y-%m-%d'),
             'Ticker': ticker,
-            'Open': round(float(latest['Open']), 4),
-            'High': round(float(latest['High']), 4),
-            'Low': round(float(latest['Low']), 4),
-            'Close': round(float(latest['Close']), 4),
-            'Adj_Close': round(float(latest['Adj Close']), 4),
-            'Volume': int(latest['Volume']),
+            'Open': round(float(latest.get('Open', 0)), 4),
+            'High': round(float(latest.get('High', 0)), 4),
+            'Low': round(float(latest.get('Low', 0)), 4),
+            'Close': round(float(latest.get('Close', 0)), 4),
+            'Adj_Close': round(float(latest.get('Adj Close', 0)), 4),
+            'Volume': int(latest.get('Volume', 0)),
             'Daily_Change_%': round(float(daily_change), 2),
-            'Volume_Intensity': round(float(latest['Volume'] / df['Volume'].rolling(5).mean().iloc[-1]), 2) if len(df) >= 5 else 1.0,
+            'Volume_Intensity': round(float(latest.get('Volume', 0) / df['Volume'].rolling(5).mean().iloc[-1]), 2) if len(df) >= 5 else 1.0,
             'Signal': 0
         }
 
@@ -37,18 +37,23 @@ for ticker in tickers:
 
         data_list.append(row)
 
-    except:
+    except Exception as e:
         continue
 
 final_df = pd.DataFrame(data_list)
 
-# Force correct column order with Date first
-final_df = final_df[['Date', 'Ticker', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume', 'Daily_Change_%', 'Volume_Intensity', 'Signal']]
-
-final_df = final_df.sort_values(by='Daily_Change_%', ascending=False).reset_index(drop=True)
-
-final_df.to_csv('MarketData_Pro.csv', index=False)
-
-print(f"✅ Saved {len(final_df)} rows")
-print("Final columns:", list(final_df.columns))
-print(final_df[['Date', 'Ticker', 'Close', 'Daily_Change_%', 'Signal']].head(8))
+if not final_df.empty:
+    # Safe column ordering
+    desired_order = ['Date', 'Ticker', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume', 'Daily_Change_%', 'Volume_Intensity', 'Signal']
+    available_cols = [col for col in desired_order if col in final_df.columns]
+    final_df = final_df[available_cols]
+    
+    final_df = final_df.sort_values(by='Daily_Change_%', ascending=False).reset_index(drop=True)
+    
+    final_df.to_csv('MarketData_Pro.csv', index=False)
+    
+    print(f"✅ Saved {len(final_df)} rows successfully")
+    print("Columns:", list(final_df.columns))
+    print(final_df.head(8)[['Date', 'Ticker', 'Close', 'Daily_Change_%', 'Signal']])
+else:
+    print("❌ No data was collected.")
