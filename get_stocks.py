@@ -1,10 +1,11 @@
 import pandas as pd
 import yfinance as yf
+from datetime import datetime
 
-print("=== Market Scanner - Minimal Test Version ===")
+print("=== Market Scanner - Simple Reliable Version ===")
 
-# Very small, reliable test list
-tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GOOGL", "META", "AMD"]
+# Small, stable list for testing
+tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GOOGL", "META", "AMD", "AVGO", "LLY"]
 
 data_list = []
 
@@ -14,7 +15,7 @@ for ticker in tickers:
         df = yf.download(ticker, period="5d", interval="1d", progress=False, threads=False)
         
         if len(df) < 2:
-            print(f"  → Not enough data for {ticker}")
+            print(f"  → Skipped {ticker} (not enough data)")
             continue
 
         latest = df.iloc[-1]
@@ -36,11 +37,14 @@ for ticker in tickers:
             'Signal': 0
         }
 
+        if abs(row['Daily_Change_%']) > 1.0:
+            row['Signal'] = 1 if row['Daily_Change_%'] > 0 else -1
+
         data_list.append(row)
-        print(f"  → Success for {ticker}")
+        print(f"  → Success: {ticker} | Change: {row['Daily_Change_%']}%")
 
     except Exception as e:
-        print(f"  → Failed for {ticker}: {e}")
+        print(f"  → Failed {ticker}: {e}")
         continue
 
 if data_list:
@@ -49,7 +53,7 @@ if data_list:
     
     final_df.to_csv('MarketData_Pro.csv', index=False)
     
-    print(f"✅ SUCCESS! Saved {len(final_df)} rows")
-    print(final_df)
+    print(f"\n✅ SUCCESS! Saved {len(final_df)} rows to MarketData_Pro.csv")
+    print(final_df[['Date', 'Ticker', 'Close', 'Daily_Change_%', 'Signal']])
 else:
-    print("❌ No data collected from any ticker.")
+    print("\n❌ No data was collected from any ticker.")
