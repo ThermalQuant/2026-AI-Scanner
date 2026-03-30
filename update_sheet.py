@@ -5,7 +5,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
-print("=== Daily Scanner - Append Mode ===")
+print("=== Daily Scanner - Append Mode (Safe) ===")
 
 # Load credentials
 creds_dict = json.loads(os.environ['GSHEET_CREDENTIALS'])
@@ -14,18 +14,27 @@ gc = gspread.authorize(creds)
 
 worksheet = gc.open_by_key(os.environ['SPREADSHEET_ID']).worksheet("Raw Data")
 
+# Check if CSV exists
+if not os.path.exists('MarketData_Pro.csv'):
+    print("❌ MarketData_Pro.csv not found! Scanner probably failed.")
+    worksheet.append_row([f"Scanner failed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - No CSV generated"])
+    exit(1)
+
 # Read the new scan
 df = pd.read_csv('MarketData_Pro.csv')
 
 if df.empty:
-    print("❌ No data in CSV")
+    print("❌ CSV is empty")
+    worksheet.append_row(["CSV was empty"])
 else:
-    # Add a timestamp column for when this scan happened
+    # Add scan timestamp
     df['Scan_Time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    # Append to the sheet (does not clear old data)
+    # Append to sheet
     worksheet.append_rows([df.columns.tolist()] + df.values.tolist(), value_input_option='RAW')
     
     print(f"✅ Appended {len(df)} new rows to 'Raw Data' sheet")
     print(f"Scan time: {df['Scan_Time'].iloc[0]}")
-    print(f"Total rows in sheet should now be growing over time")
+    print(f"Columns: {list(df.columns)}")
+
+print("=== Append finished ===")
