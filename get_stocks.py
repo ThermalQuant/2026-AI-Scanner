@@ -1,9 +1,12 @@
 import pandas as pd
 import yfinance as yf
 
-print("=== Market Scanner v6 - Safe Version ===")
+print("=== Market Scanner - Clean Daily Version ===")
 
-tickers = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AVGO", "GOOG", "LLY", "JPM", "V", "XOM", "UNH", "MA", "PG", "JNJ", "HD", "MRK", "COST", "ABBV", "NFLX", "AMD", "CRM", "TMUS", "LIN", "WMT", "BAC", "CVX", "KO", "PEP", "ACN", "MCD", "CSCO", "ADBE", "ABT", "WFC", "INTU", "DIS", "VZ", "CMCSA", "PFE", "AMGN", "TXN", "HON", "NEE", "IBM", "RTX", "SPGI", "LOW", "PM", "GS", "CAT", "UNP", "GE", "BA", "ELV", "ETN", "SYK", "BLK", "MDT", "ADP", "LMT", "SBUX", "NOW", "ISRG", "PLD", "INTC", "SCHW", "REGN", "BKNG", "KLAC", "PANW", "FI", "ANET", "KKR", "ADI", "MU", "GILD", "SO", "MO", "ICE", "ZTS", "CME", "ITW", "SHW", "DUK", "CL", "WM", "TGT", "EOG", "SNPS", "BSX", "APD", "PGR", "CDNS", "MAR", "ORCL", "SLB", "PSX", "OKE", "PH", "ROP", "MPC", "USB", "AON"]
+# Focused, reliable ticker list (you can expand later)
+tickers = ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AVGO", "GOOG", "LLY",
+           "JPM", "V", "XOM", "UNH", "MA", "PG", "JNJ", "HD", "MRK", "COST", "ABBV",
+           "NFLX", "AMD", "CRM", "TMUS", "LIN", "WMT", "BAC", "CVX", "KO", "PEP"]
 
 data_list = []
 
@@ -32,21 +35,21 @@ for ticker in tickers:
             'Signal': 0
         }
 
+        # Simple but useful signal
         if row['Volume_Intensity'] > 1.5 and abs(row['Daily_Change_%']) > 1.0:
             row['Signal'] = 1 if row['Daily_Change_%'] > 0 else -1
 
         data_list.append(row)
 
-    except Exception as e:
+    except:
         continue
 
 final_df = pd.DataFrame(data_list)
 
 if not final_df.empty:
-    # Safe column ordering
-    desired_order = ['Date', 'Ticker', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume', 'Daily_Change_%', 'Volume_Intensity', 'Signal']
-    available_cols = [col for col in desired_order if col in final_df.columns]
-    final_df = final_df[available_cols]
+    # Force Date as first column
+    final_df = final_df[['Date', 'Ticker', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 
+                         'Volume', 'Daily_Change_%', 'Volume_Intensity', 'Signal']]
     
     final_df = final_df.sort_values(by='Daily_Change_%', ascending=False).reset_index(drop=True)
     
@@ -54,6 +57,6 @@ if not final_df.empty:
     
     print(f"✅ Saved {len(final_df)} rows successfully")
     print("Columns:", list(final_df.columns))
-    print(final_df.head(8)[['Date', 'Ticker', 'Close', 'Daily_Change_%', 'Signal']])
+    print(final_df.head(10)[['Date', 'Ticker', 'Close', 'Daily_Change_%', 'Signal']])
 else:
-    print("❌ No data was collected.")
+    print("❌ No data collected.")
